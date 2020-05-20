@@ -3,6 +3,8 @@ package ed.carisu.messageboard.satx.io;
 import ed.carisu.messageboard.satx.db.Message;
 import ed.carisu.messageboard.satx.db.MessageBoardRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,10 +18,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MessageController {
     private final MessageBoardRepository repository;
+    @Value("${ed.carisu.messageboard.messages.limit}")
+    @Autowired
+    private String limit;
 
     @GetMapping
     public List<MessageDto> queryMessages() {
-        return repository.findAllByCreatedTimestampDesc()
+        return repository.findAllOrderByCreatedTimestampLimitedToDesc(Integer.parseInt(limit))
                 .stream()
                 .map(m -> new MessageDto(m.getUsername(), m.getMessageBody()))
                 .collect(Collectors.toList());
