@@ -8,8 +8,8 @@ class MessageControllerSpec extends Specification {
     static MESSAGE_LIST = [["user1":"Second message"] as Tuple,
                            ["user2":"A message from a new user"] as Tuple,
                            ["user1":"First message"] as Tuple]
-    static RETURN_LIST = MESSAGE_LIST.forEach {t -> t as Message}
-    static RESULT_LIST = MESSAGE_LIST.forEach { t -> t as MessageDto}
+    static RETURN_LIST = MESSAGE_LIST.collect {it as Message}
+    static RESULT_LIST = MESSAGE_LIST.collect { it as MessageDto}
 
     def stubController() {
         def repository = Stub(MessageBoardRepository)
@@ -75,13 +75,14 @@ class MessageControllerSpec extends Specification {
 
         and: "a message body of {length} characters and default username"
         def username = "user"
-        def messageBody = new char[length].each { _ -> ' '} as String
+        def messageBody = new char[length].collect {' '} as String
 
         when: "post message"
         controller.postMessage(username, messageBody)
 
         then: "no exception thrown"
         noExceptionThrown()
+        messageBody.length() == length
 
         where:
         length | _
