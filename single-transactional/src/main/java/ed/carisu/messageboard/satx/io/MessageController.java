@@ -2,6 +2,7 @@ package ed.carisu.messageboard.satx.io;
 
 import ed.carisu.messageboard.satx.db.Message;
 import ed.carisu.messageboard.satx.db.MessageBoardRepository;
+import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,21 @@ public class MessageController {
 
     @PostMapping("/{username}")
     public void postMessage(@PathParam("username")String username, @RequestBody String messageBody) {
-        repository.saveAndFlush(new Message(username, messageBody));
+        validateUsername(username)
+                .flatMap(u -> validateMessageBody(messageBody))
+                .onSuccess(m -> repository.saveAndFlush(new Message(username, messageBody)))
+                .get();
+    }
+
+    private Try<String> validateUsername(String username) {
+        return username.length() > 0 && username.length() <= 10
+                ? Try.success(username)
+                : Try.failure(InvalidUsernameException.ofWrongLength());
+    }
+
+    private Try<String> validateMessageBody(String messageBody) {
+        return messageBody.length() <= 1000
+                ? Try.success(messageBody)
+                : Try.failure(InvalidMessageBodyException.ofWrongLength());
     }
 }
