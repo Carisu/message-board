@@ -5,11 +5,11 @@ import ed.carisu.messageboard.satx.db.MessageBoardRepository
 import spock.lang.Specification
 
 class MessageControllerSpec extends Specification {
-    static MESSAGE_LIST = [["user1":"Second message"] as Tuple,
-                           ["user2":"A message from a new user"] as Tuple,
-                           ["user1":"First message"] as Tuple]
-    static RETURN_LIST = MESSAGE_LIST.collect {it as Message}
-    static RESULT_LIST = MESSAGE_LIST.collect { it as MessageDto}
+    static final MESSAGE_LIST = [new Tuple("user1","Second message"),
+                           new Tuple("user2","A message from a new user"),
+                           new Tuple("user1","First message")]
+    static final RETURN_LIST = MESSAGE_LIST.collect { it as Message }
+    static final RESULT_LIST = MESSAGE_LIST.collect { it as MessageDto }
 
     def stubController() {
         def repository = Stub(MessageBoardRepository)
@@ -17,9 +17,12 @@ class MessageControllerSpec extends Specification {
     }
 
     def stubControllerWithResults() {
-        def repository = Stub(MessageBoardRepository)
-        repository.findAllOrderByCreatedTimestampLimitedToDesc(_ as int) >> RETURN_LIST
-        new MessageController(repository)
+        def repository = Stub(MessageBoardRepository) {
+            findAllOrderByCreatedTimestampLimitedToDesc(_) >> RETURN_LIST
+        }
+        def controller = new MessageController(repository)
+        controller.limit = "10"
+        controller
     }
 
     def "Check username allows 1-10 chars"() {
@@ -46,7 +49,7 @@ class MessageControllerSpec extends Specification {
         "0123456"|7
         "01234567"|8
         "012345678"|9
-        "01234567890"|10
+        "0123456789"|10
     }
 
     def "Check username does not allow 0 or >10 chars"() {
@@ -75,7 +78,7 @@ class MessageControllerSpec extends Specification {
 
         and: "a message body of {length} characters and default username"
         def username = "user"
-        def messageBody = new char[length].collect {' '} as String
+        def messageBody = (new char[length].collect {' '} as char[]) as String
 
         when: "post message"
         controller.postMessage(username, messageBody)
