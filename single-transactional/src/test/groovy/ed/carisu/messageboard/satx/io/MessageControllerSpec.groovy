@@ -18,7 +18,7 @@ class MessageControllerSpec extends Specification {
 
     def stubControllerWithResults() {
         def repository = Stub(MessageBoardRepository) {
-            findAllOrderByCreatedTimestampLimitedToDesc(_) >> RETURN_LIST
+            findOrderByCreatedTimestampDesc(_) >> RETURN_LIST
         }
         def controller = new MessageController(repository)
         controller.limit = "10"

@@ -25,7 +25,7 @@ public class MessageController {
 
     @GetMapping
     public List<MessageDto> queryMessages() {
-        return repository.findAllOrderByCreatedTimestampLimitedToDesc(Integer.parseInt(limit))
+        return repository.findOrderByCreatedTimestampDesc(Integer.parseInt(limit))
                 .stream()
                 .map(m -> new MessageDto(m.getUsername(), m.getMessageBody()))
                 .collect(Collectors.toList());

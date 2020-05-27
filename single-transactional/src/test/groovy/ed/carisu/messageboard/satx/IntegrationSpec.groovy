@@ -16,12 +16,10 @@ class IntegrationSpec extends Specification {
 
     def setup() {
         repository.deleteAll()
-        controller = Spy(controller)
-        controller.postMessage(*_) >> { callRealMethod(); sleep(10) }
     }
 
     def "Query has all POST commands in reverse order up to ten"() {
-        given: "{number} POST commands"
+        given: "#number POST commands"
         def expected = []
         (1..number).each {
             controller.postMessage("user", "message: " + it)
@@ -53,17 +51,17 @@ class IntegrationSpec extends Specification {
         def user1 = results[0].username == "user1" ? results[0] : results[1]
         def user2 = results[0].username == "user2" ? results[0] : results[1]
 
-        then: "First message has earleir time than second"
+        then: "First message has earlier time than second"
         user1.createdTimestamp < user2.createdTimestamp
     }
 
     def "All queries between two POST commands have the same lists"() {
-        given: "{commands} initial of POST commands"
+        given: "#commands initial of POST commands"
         (1..commands).each {
             controller.postMessage("user", "message: " + it)
         }
 
-        when: "{queries} queries are made, followed by another POST command"
+        when: "#queries queries are made, followed by another POST command"
         def results = []
         (1..queries).each {
             results += controller.queryMessages()
@@ -83,7 +81,7 @@ class IntegrationSpec extends Specification {
         50       | 20
     }
 
-    def "Each query has the same elements either side of 1-9 POST commands #initial x #internal"() {
+    def "Each query has the same elements either side of 1-9 POST commands"() {
         given: "#initial POST commands followed by a query followed by #internal commands followed  by another query"
         (1..initial).each {
             controller.postMessage("user", "initial: " + it)
@@ -94,7 +92,7 @@ class IntegrationSpec extends Specification {
         }
         def secondQuery = controller.queryMessages()
 
-        when: "Get first {10-internal} messages from first query and last {10-internal} from second query"
+        when: "Get first #(10-internal) messages from first query and last #(10-internal) from second query"
         def firstResults = initial+internal <= 10
                 ? firstQuery.subList(0, initial)
                 : firstQuery.subList(0, 10-internal)
@@ -106,6 +104,8 @@ class IntegrationSpec extends Specification {
         firstResults == secondResults
 
         where:
-        [initial, internal] << [[5, 10, 20], (1..9).findAll()].combinations()
+        [i1, i2] << [[5, 10, 20], (1..9).findAll()].combinations()
+        initial = i1 as int
+        internal = i2 as int
     }
 }
