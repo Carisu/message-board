@@ -20,7 +20,6 @@ class IntegrationSpec extends Specification {
     @Autowired
     MockMvc mvc
 
-
     def setup() {
         repository.deleteAll()
     }
@@ -39,7 +38,8 @@ class IntegrationSpec extends Specification {
         .andReturn()
         .response
         .contentAsString
-        new JsonSlurper().parseText(results)
+        def json = new JsonSlurper().parseText(results)
+        json.collect { new MessageDto(it.username, it.messageBody) }
     }
 
     def "Query has all POST commands in reverse order up to ten"() {
@@ -110,7 +110,7 @@ class IntegrationSpec extends Specification {
         (1..initial).each {
             post("user", "initial: " + it)
         }
-        def firstQuery = controller.queryMessages()
+        def firstQuery = query()
         (1..internal).each {
             post("user", "internal: "+ it)
         }
