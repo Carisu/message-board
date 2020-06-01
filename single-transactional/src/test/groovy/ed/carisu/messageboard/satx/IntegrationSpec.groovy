@@ -1,28 +1,52 @@
 package ed.carisu.messageboard.satx
 
 import ed.carisu.messageboard.satx.db.MessageBoardRepository
-import ed.carisu.messageboard.satx.io.MessageController
 import ed.carisu.messageboard.satx.io.MessageDto
+import groovy.json.JsonSlurper
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import spock.lang.Specification
 
 @SpringBootTest
+@AutoConfigureMockMvc
 class IntegrationSpec extends Specification {
     @Autowired
-    private MessageBoardRepository repository
+    MessageBoardRepository repository
     @Autowired
-    private MessageController controller
+    MockMvc mvc
+
 
     def setup() {
         repository.deleteAll()
+    }
+
+    def post(username, messageBody) {
+        mvc.perform(MockMvcRequestBuilders.post("/message/" + username)
+                .content(messageBody)
+                .contentType(MediaType.TEXT_PLAIN)
+                .characterEncoding("UTF-8"))
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+    }
+
+    def query() {
+        def results = mvc.perform(MockMvcRequestBuilders.get("/message"))
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+        .andReturn()
+        .response
+        .contentAsString
+        new JsonSlurper().parseText(results)
     }
 
     def "Query has all POST commands in reverse order up to ten"() {
         given: "#number POST commands"
         def expected = []
         (1..number).each {
-            controller.postMessage("user", "message: " + it)
+            post("user", "message: " + it)
             expected += ["user", "message: " + it] as MessageDto
         }
         expected = expected.reverse()
@@ -31,7 +55,7 @@ class IntegrationSpec extends Specification {
         }
 
         when: "get query"
-        def actual = controller.queryMessages()
+        def actual = query()
 
         then: "we have the expected results"
         actual == expected
@@ -43,8 +67,8 @@ class IntegrationSpec extends Specification {
 
     def "Two separate POST commands have different create dates"() {
         given: "Two POST commands"
-        controller.postMessage("user1", "first message")
-        controller.postMessage("user2", "second message")
+        post("user1", "first message")
+        post("user2", "second message")
 
         when: "Retrieve messages from database"
         def results = repository.findAll()
@@ -58,15 +82,15 @@ class IntegrationSpec extends Specification {
     def "All queries between two POST commands have the same lists"() {
         given: "#commands initial of POST commands"
         (1..commands).each {
-            controller.postMessage("user", "message: " + it)
+            post("user", "message: " + it)
         }
 
         when: "#queries queries are made, followed by another POST command"
         def results = []
         (1..queries).each {
-            results += controller.queryMessages()
+            results += query()
         }
-        controller.postMessage("user", "final message")
+        post("user", "final message")
 
         then: "All queries are the same"
         results.each {
@@ -84,13 +108,13 @@ class IntegrationSpec extends Specification {
     def "Each query has the same elements either side of 1-9 POST commands"() {
         given: "#initial POST commands followed by a query followed by #internal commands followed  by another query"
         (1..initial).each {
-            controller.postMessage("user", "initial: " + it)
+            post("user", "initial: " + it)
         }
         def firstQuery = controller.queryMessages()
         (1..internal).each {
-            controller.postMessage("user", "internal: "+ it)
+            post("user", "internal: "+ it)
         }
-        def secondQuery = controller.queryMessages()
+        def secondQuery = query()
 
         when: "Get first #(10-internal) messages from first query and last #(10-internal) from second query"
         def firstResults = initial+internal <= 10

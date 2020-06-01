@@ -4,19 +4,20 @@ import ed.carisu.messageboard.satx.db.Message;
 import ed.carisu.messageboard.satx.db.MessageBoardRepository;
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.websocket.server.PathParam;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestController("message")
+@RestController("/message")
 @RequiredArgsConstructor
+@Slf4j
 public class MessageController {
     private final MessageBoardRepository repository;
     @Value("${ed.carisu.messageboard.messages.limit}")
@@ -25,6 +26,7 @@ public class MessageController {
 
     @GetMapping
     public List<MessageDto> queryMessages() {
+        log.debug("query");
         return repository.findOrderByCreatedTimestampDesc(Integer.parseInt(limit))
                 .stream()
                 .map(m -> new MessageDto(m.getUsername(), m.getMessageBody()))
@@ -32,11 +34,13 @@ public class MessageController {
     }
 
     @PostMapping("/{username}")
-    public void postMessage(@PathParam("username")String username, @RequestBody String messageBody) {
+    public ResponseEntity<Void> postMessage(@PathParam("username")String username, @RequestBody String messageBody) {
+        log.debug("post " + username);
         validateUsername(username)
                 .flatMap(u -> validateMessageBody(messageBody))
                 .onSuccess(m -> repository.saveAndFlush(new Message(username, messageBody)))
                 .get();
+        return ResponseEntity.noContent().build();
     }
 
     private Try<String> validateUsername(String username) {
