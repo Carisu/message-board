@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/message")
 @RequiredArgsConstructor
 @Slf4j
 public class MessageController {
@@ -22,7 +24,7 @@ public class MessageController {
     @Autowired
     private String limit;
 
-    @GetMapping("/message")
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MessageDto> queryMessages() {
         log.debug("query");
         return repository.findOrderByCreatedTimestampDesc(Integer.parseInt(limit))
@@ -31,7 +33,7 @@ public class MessageController {
                 .collect(Collectors.toList());
     }
 
-    @PostMapping("/message/{username}")
+    @PostMapping(path = "/{username}", consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<Void> postMessage(@PathVariable("username")String username, @RequestBody String messageBody) {
         log.debug("post " + username);
         validateUsername(username)
