@@ -7,10 +7,11 @@
     <artifactId>message-board</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-
     <name>message-board</name>
+
     <modules>
         <module>single-transactional</module>
+        <module>stress-test</module>
     </modules>
 
 </project>
