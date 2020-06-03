@@ -14,11 +14,30 @@
         <target.main.class>ed.carisu.messageboard.satx.Application</target.main.class>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.2.6.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
+        <!-- Existing module dependencies to test -->
         <dependency>
             <groupId>ed.carisu</groupId>
             <artifactId>single-transactional</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <!-- Not included in spring boot app by default -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
     </dependencies>
 
@@ -27,7 +46,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.2.6.RELEASE</version>
                 <executions>
                     <execution>
                         <id>create</id>
