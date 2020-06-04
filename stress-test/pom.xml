@@ -93,12 +93,9 @@
                         <goals>
                             <goal>jmeter</goal>
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>results</id>
-                        <goals>
-                            <goal>results</goal>
-                        </goals>
+                        <configuration>
+                            <generateReports>true</generateReports>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
