@@ -15,3 +15,7 @@ There are two endpoints allowed:
 *module **single-transactional***
 This is a simple base version in which both command and query are in the same application and transactions enforce consistency in the database.
 This is expected to produce worse-case performance.
+##### Single app, event sourcing with transactional CQRS
+*module **single-es-trans-cqrs***
+This is a version which stores all commands via non-blocking events, so post should be fast. Query is stored in a single table via transactions
+This is exapected to be signiifcantly quicker, especially when scaled up

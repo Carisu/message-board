@@ -3,15 +3,106 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.6.RELEASE</version>
+        <relativePath/>
+    </parent>
+
     <groupId>ed.carisu</groupId>
     <artifactId>message-board</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>message-board</name>
 
-    <modules>
-        <module>single-transactional</module>
-        <module>stress-test</module>
-    </modules>
+    <properties>
+        <java.version>11</java.version>
+        <spock.version>1.3-groovy-2.5</spock.version>
+        <vavr.version>0.10.2</vavr.version>
+        <gmavenplus.version>1.9.0</gmavenplus.version>
+    </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.vavr</groupId>
+                <artifactId>vavr</artifactId>
+                <version>${vavr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.spockframework</groupId>
+                <artifactId>spock-core</artifactId>
+                <version>${spock.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.spockframework</groupId>
+                <artifactId>spock-spring</artifactId>
+                <version>${spock.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <classifier>boot</classifier>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.gmavenplus</groupId>
+                    <artifactId>gmavenplus-plugin</artifactId>
+                    <version>${gmavenplus.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>addTestSources</goal>
+                                <goal>compileTests</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <includes>
+                            <include>**/*Test.*</include>
+                            <include>**/*Spec.*</include>
+                        </includes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>build</id>
+            <modules>
+                <module>single-transactional</module>
+                <module>single-es-trans-cqrs</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>test-single-transactional</id>
+            <modules>
+                <module>single-transactional</module>
+                <module>stress-test</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>test-single-es-trans-cqrs</id>
+            <modules>
+                <module>single-es-trans-cqrs</module>
+                <module>stress-test</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

@@ -4,36 +4,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ed.carisu</groupId>
+    <parent>
+        <groupId>ed.carisu</groupId>
+        <artifactId>message-board</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
     <artifactId>stress-test</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>message-board-stress-test</name>
 
     <properties>
-        <java.version>11</java.version>
-        <target.main.class>ed.carisu.messageboard.satx.Application</target.main.class>
+        <target.main.class>Build with valid profile</target.main.class>
+        <jmeter-maven-plugin.version>3.1.0</jmeter-maven-plugin.version>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.2.6.RELEASE</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
-        <!-- Existing module dependencies to test -->
-        <dependency>
-            <groupId>ed.carisu</groupId>
-            <artifactId>single-transactional</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
         <!-- Required as not included in spring boot app by default -->
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
@@ -80,7 +64,7 @@
             <plugin>
                 <groupId>com.lazerycode.jmeter</groupId>
                 <artifactId>jmeter-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>${jmeter-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>configuration</id>
@@ -101,4 +85,33 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>test-single-transactional</id>
+            <properties>
+                <target.main.class>ed.carisu.messageboard.satx.Application</target.main.class>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>ed.carisu</groupId>
+                    <artifactId>single-transactional</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>test-single-es-trans-cqrs</id>
+            <properties>
+                <target.main.class>ed.carisu.messageboard.saescqrstx.Application</target.main.class>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>ed.carisu</groupId>
+                    <artifactId>single-es-trans-cqrs</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
