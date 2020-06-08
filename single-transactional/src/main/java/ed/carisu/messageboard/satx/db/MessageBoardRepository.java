@@ -10,8 +10,8 @@ import java.util.UUID;
 
 @Repository
 @Transactional
-public interface MessageBoardRepository extends JpaRepository<Message, UUID> {
+public interface MessageBoardRepository extends JpaRepository<MessageBoard, UUID> {
 
     @Query(value = "SELECT * FROM MESSAGE_BOARD ORDER BY CREATED_TIMESTAMP DESC, ID LIMIT ?1", nativeQuery = true)
-    List<Message> findOrderByCreatedTimestampDesc(int limit);
+    List<MessageBoard> findOrderByCreatedTimestampDesc(int limit);
 }

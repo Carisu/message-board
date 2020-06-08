@@ -1,6 +1,6 @@
 package ed.carisu.messageboard.satx.io;
 
-import ed.carisu.messageboard.satx.db.Message;
+import ed.carisu.messageboard.satx.db.MessageBoard;
 import ed.carisu.messageboard.satx.db.MessageBoardRepository;
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class MessageController {
         log.debug("post " + username);
         validateUsername(username)
                 .flatMap(u -> validateMessageBody(messageBody))
-                .onSuccess(m -> repository.saveAndFlush(new Message(username, messageBody)))
+                .onSuccess(m -> repository.saveAndFlush(new MessageBoard(username, messageBody)))
                 .get();
         return ResponseEntity.noContent().build();
     }

@@ -1,6 +1,6 @@
 package ed.carisu.messageboard.satx.io
 
-import ed.carisu.messageboard.satx.db.Message
+import ed.carisu.messageboard.satx.db.MessageBoard
 import ed.carisu.messageboard.satx.db.MessageBoardRepository
 import spock.lang.Specification
 
@@ -8,7 +8,7 @@ class MessageControllerSpec extends Specification {
     static final MESSAGE_LIST = [new Tuple("user1","Second message"),
                            new Tuple("user2","A message from a new user"),
                            new Tuple("user1","First message")]
-    static final RETURN_LIST = MESSAGE_LIST.collect { it as Message }
+    static final RETURN_LIST = MESSAGE_LIST.collect { it as MessageBoard }
     static final RESULT_LIST = MESSAGE_LIST.collect { it as MessageDto }
 
     def stubController() {
