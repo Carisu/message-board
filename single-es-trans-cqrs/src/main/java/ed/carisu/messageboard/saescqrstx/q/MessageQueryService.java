@@ -18,7 +18,7 @@ import static io.vavr.API.*;
 @Service
 @RequiredArgsConstructor
 public class MessageQueryService {
-    MessageBoardQueryRepository repository;
+    private final MessageBoardQueryRepository repository;
 
     public Try<List<MessageDto>> convertQueryToList(MessageBoardQuery query) {
         return Try.of(() -> Stream.rangeClosed(1, 10)
@@ -29,10 +29,10 @@ public class MessageQueryService {
     }
 
     public Try<MessageBoardQuery> convertListToQuery(List<MessageDto> list) {
-        return Stream.rangeClosed(1, list.length())
-                .collect(() -> Option.some(new MessageBoardQuery()),
-                        (q, i) -> appendDtoToQuery(q, list.get(i), i),
-                        (q1, q2) -> Option.none()).toTry();
+        return Try.of(() -> Stream.rangeClosed(1, list.length())
+                .foldLeft(Option.some(new MessageBoardQuery()),
+                        (q, i) -> appendDtoToQuery(q, list.get(i-1), i))
+                .get());
     }
 
     public Option<MessageDto> getDtoForMessageQuery(MessageBoardQuery query, int index) {
@@ -47,22 +47,22 @@ public class MessageQueryService {
                 Case($(8), new MessageDto(query.getUsername8(), query.getMessageBody8())),
                 Case($(9), new MessageDto(query.getUsername9(), query.getMessageBody9())),
                 Case($(10), new MessageDto(query.getUsername10(), query.getMessageBody10()))
-        ).filter(m -> m.getUsername() != null);
+        ).filter(m -> m.getUsername() != null && m.getMessageBody() != null);
     }
 
     public Option<MessageBoardQuery> appendDtoToQuery(Option<MessageBoardQuery> query, MessageDto dto, int index) {
-        MessageBoardQuery res = query.getOrElse(new MessageBoardQuery());
-        return Match(index).option(
-                Case($(1), res.setAt1Chain(dto.getUsername(), dto.getMessageBody())),
-                Case($(2), res.setAt2Chain(dto.getUsername(), dto.getMessageBody())),
-                Case($(3), res.setAt3Chain(dto.getUsername(), dto.getMessageBody())),
-                Case($(4), res.setAt4Chain(dto.getUsername(), dto.getMessageBody())),
-                Case($(5), res.setAt5Chain(dto.getUsername(), dto.getMessageBody())),
-                Case($(6), res.setAt6Chain(dto.getUsername(), dto.getMessageBody())),
-                Case($(7), res.setAt7Chain(dto.getUsername(), dto.getMessageBody())),
-                Case($(8), res.setAt8Chain(dto.getUsername(), dto.getMessageBody())),
-                Case($(9), res.setAt9Chain(dto.getUsername(), dto.getMessageBody())),
-                Case($(10), res.setAt10Chain(dto.getUsername(), dto.getMessageBody()))
+        return Match(index).of(
+                Case($(1), i -> query.map(q -> q.setAt1Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(2), i -> query.map(q -> q.setAt2Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(3), i -> query.map(q -> q.setAt3Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(4), i -> query.map(q -> q.setAt4Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(5), i -> query.map(q -> q.setAt5Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(6), i -> query.map(q -> q.setAt6Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(7), i -> query.map(q -> q.setAt7Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(8), i -> query.map(q -> q.setAt8Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(9), i -> query.map(q -> q.setAt9Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(10), i -> query.map(q -> q.setAt10Chain(dto.getUsername(), dto.getMessageBody()))),
+                Case($(), i -> Option.none())
         );
     }
 
