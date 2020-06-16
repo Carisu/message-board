@@ -78,7 +78,7 @@ class IntegrationSpec extends Specification {
         post("user2", "second message")
 
         when: "Retrieve messages from database"
-        def results = repository.findAll()
+        def results = eventRepository.findAll()
         def user1 = results[0].username == "user1" ? results[0] : results[1]
         def user2 = results[0].username == "user2" ? results[0] : results[1]
 
