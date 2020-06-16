@@ -74,8 +74,8 @@ public class MessageQueryService {
     @EventListener
     @Transactional
     public Try<Void> updateQuery(MessageBoardEvent event) {
-        return query().map(l -> l.append(new MessageDto(event.getUsername(), event.getMessageBody())))
-                .map(l -> l.takeRight(10))
+        return query().map(l -> l.insert(0, new MessageDto(event.getUsername(), event.getMessageBody()))
+                        .take(10))
                 .flatMap(this::convertListToQuery)
                 .map(repository::saveAndFlush)
                 .map(q -> null);

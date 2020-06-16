@@ -30,7 +30,7 @@ class MessageCommandServiceSpec extends GeneratorSpecification {
         def repository = Mock(MessageBoardEventRepository)
         def service = new MessageCommandService(repository, publisher)
 
-        when: "command recevied"
+        when: "command received"
         service.messageCommandReceived(command)
 
         then: "the event is published"

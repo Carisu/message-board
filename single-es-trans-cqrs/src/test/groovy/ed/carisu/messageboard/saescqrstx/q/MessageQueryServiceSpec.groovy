@@ -1,10 +1,18 @@
 package ed.carisu.messageboard.saescqrstx.q
 
 import ed.carisu.messageboard.saescqrstx.GeneratorSpecification
+import ed.carisu.messageboard.saescqrstx.db.MessageBoardEvent
 import ed.carisu.messageboard.saescqrstx.db.MessageBoardQuery
 import ed.carisu.messageboard.saescqrstx.db.MessageBoardQueryRepository
 import io.vavr.collection.List
 import io.vavr.control.Option
+import org.springframework.data.domain.Example
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+
+import java.sql.SQLException
+import java.time.Instant
 
 class MessageQueryServiceSpec extends GeneratorSpecification {
     static randomQuery(int pos = 10) {
@@ -143,5 +151,95 @@ class MessageQueryServiceSpec extends GeneratorSpecification {
         dtos = (1..count).collect {
             new MessageDto(usernameGenerator(), messageBodyGenerator())
         }
+    }
+
+    def "Check a query is converted correctly to a list of DTOs"() {
+        given: "the service"
+        def service = stubbedService()
+
+        when: "convert query"
+        def dtos = service.convertQueryToList(query)
+
+        then: "DTOs returned correctly"
+        dtos.isSuccess()
+        dtos.get().length() <= 10
+        dtos.get().length() == count
+        expected == dtos.get().asJava()
+
+        where:
+        count << (0..10).findAll()
+        query = randomQuery(count)
+        expected = count == 0 ? [] : (1..count).collect {
+            new MessageDto(query.("username"+it), query.("messageBody"+it))
+        }
+    }
+
+    def "Check query returns correct data"() {
+        given: "the service"
+        def repository = Stub(MessageBoardQueryRepository) {
+            getOne(_ as UUID) >> query
+        }
+        def service = new MessageQueryService(repository)
+
+        when: "query"
+        def dtos = service.query()
+
+        then: "correct dtos returned"
+        dtos.isSuccess()
+        expected == dtos.get().asJava()
+
+        where:
+        count << (0..10).findAll()
+        query = randomQuery(count)
+        expected = count == 0 ? [] : (1..count).collect {
+            new MessageDto(query.("username"+it), query.("messageBody"+it))
+        }
+    }
+
+    def "Check repository throwing SQL expection results in failure"() {
+        given: "the service"
+        def repository = Stub(MessageBoardQueryRepository) {
+            _(_) >> { throw new SQLException() }
+        }
+        def service = new MessageQueryService(repository)
+
+        expect: "query to be a failure"
+        service.query().isFailure()
+    }
+
+    def "Check applying new events adds correctly to the existing query"() {
+        given: "the service"
+        def repository = Mock(MessageBoardQueryRepository)
+        def service = new MessageQueryService(repository)
+
+        when: "update query with event"
+        def test = service.updateQuery(event)
+
+        then: "query updated, passing correct values to repository"
+        test.isSuccess()
+        1 * repository.getOne(_ as UUID) >> oldQuery
+        1 * repository.saveAndFlush(newQuery) >> newQuery
+
+        where:
+        count << (0..10).findAll()
+        oldQuery = randomQuery(count)
+        event = new MessageBoardEvent(usernameGenerator(), messageBodyGenerator(), Instant.now())
+        newQuery = new MessageBoardQuery().tap {
+            q -> (0..count).take(10).each {
+                q.("username"+(it+1)) = (it == 0 ? event.username : oldQuery.("username"+it))
+                q.("messageBody"+(it+1)) = (it == 0 ? event.messageBody : oldQuery.("messageBody"+it))
+            }
+        }
+    }
+
+    def "Check applying event with SQL excpetion results in failure"() {
+        given: "The service"
+        def repository = Stub(MessageBoardQueryRepository) {
+            _(_) >> { throw new SQLException() }
+        }
+        def service = new MessageQueryService(repository)
+
+        expect: "failure on exception"
+        service.updateQuery(new MessageBoardEvent(usernameGenerator(), messageBodyGenerator(), Instant.now())).isFailure()
     }
 }
