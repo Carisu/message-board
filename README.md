@@ -17,5 +17,9 @@ This is a simple base version in which both command and query are in the same ap
 This is expected to produce worse-case performance.
 ##### Single app, event sourcing with transactional CQRS
 *module **single-es-trans-cqrs***
-This is a version which stores all commands via non-blocking events, so post should be fast. Query is stored in a single table via transactions
-This is exapected to be signiifcantly quicker, especially when scaled up
+This is a version which processes all commands via non-blocking events, so post should be fast. Query is stored in a single table via transactions
+This is expected to be significantly quicker, especially when scaled up
+##### Single app, queued event sourcing with transactional CQRS
+*module **single-queued-es-trans-cqrs***
+This is a version which places commands and events in separate sharded queues to be handled independently by different threads.
+This should enable improved processing by different threads

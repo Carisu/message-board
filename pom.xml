@@ -88,6 +88,7 @@
             <modules>
                 <module>single-transactional</module>
                 <module>single-es-trans-cqrs</module>
+                <module>single-queued-es-trans-cqrs</module>
             </modules>
         </profile>
         <profile>
@@ -101,6 +102,13 @@
             <id>test-single-es-trans-cqrs</id>
             <modules>
                 <module>single-es-trans-cqrs</module>
+                <module>stress-test</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>test-single-queued-es-trans-cqrs</id>
+            <modules>
+                <module>single-queued-es-trans-cqrs</module>
                 <module>stress-test</module>
             </modules>
         </profile>
