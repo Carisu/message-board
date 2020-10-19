@@ -25,11 +25,11 @@ public class MessageController {
     private String limit;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<MessageDto> queryMessages() {
+    public List<Message> queryMessages() {
         log.debug("query");
         return repository.findOrderByCreatedTimestampDesc(Integer.parseInt(limit))
                 .stream()
-                .map(m -> new MessageDto(m.getUsername(), m.getMessageBody()))
+                .map(m -> new Message(m.getUsername(), m.getMessageBody()))
                 .collect(Collectors.toList());
     }
 

@@ -9,7 +9,7 @@ class MessageControllerSpec extends Specification {
                            new Tuple("user2","A message from a new user"),
                            new Tuple("user1","First message")]
     static final RETURN_LIST = MESSAGE_LIST.collect { it as MessageBoard }
-    static final RESULT_LIST = MESSAGE_LIST.collect { it as MessageDto }
+    static final RESULT_LIST = MESSAGE_LIST.collect { it as Message }
 
     def stubController() {
         def repository = Stub(MessageBoardRepository)

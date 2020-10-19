@@ -1,22 +1,18 @@
 package ed.carisu.messageboard.saescqrstx.io
 
 import ed.carisu.messageboard.saescqrstx.GeneratorSpecification
-import ed.carisu.messageboard.saescqrstx.q.MessageCommand
-import ed.carisu.messageboard.saescqrstx.q.MessageDto
+import ed.carisu.messageboard.saescqrstx.q.Message
 import ed.carisu.messageboard.saescqrstx.q.MessageQueryService
 import io.vavr.collection.List
 import io.vavr.control.Try
 import org.springframework.context.ApplicationEventPublisher
-import spock.lang.Specification
-
-import java.time.Instant
 
 class MessageControllerSpec extends GeneratorSpecification {
     static final MESSAGE_LIST = [new Tuple("user1","Second message"),
                            new Tuple("user2","A message from a new user"),
                            new Tuple("user1","First message")]
-    static final RETURN_LIST = MESSAGE_LIST.collect { it as MessageDto } as MessageDto[]
-    static final RESULT_LIST = MESSAGE_LIST.collect { it as MessageDto }
+    static final RETURN_LIST = MESSAGE_LIST.collect { it as Message } as Message[]
+    static final RESULT_LIST = MESSAGE_LIST.collect { it as Message }
 
     def stubController() {
         def publisher = Stub(ApplicationEventPublisher)

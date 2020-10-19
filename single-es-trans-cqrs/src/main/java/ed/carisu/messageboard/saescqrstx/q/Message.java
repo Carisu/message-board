@@ -1,9 +1,9 @@
-package ed.carisu.messageboard.satx.io;
+package ed.carisu.messageboard.saescqrstx.q;
 
 import lombok.Value;
 
 @Value
-public class MessageDto {
+public class Message {
     String username;
     String messageBody;
 }

@@ -1,7 +1,7 @@
 package ed.carisu.messageboard.saescqrstx.io;
 
 import ed.carisu.messageboard.saescqrstx.q.MessageCommand;
-import ed.carisu.messageboard.saescqrstx.q.MessageDto;
+import ed.carisu.messageboard.saescqrstx.q.Message;
 import ed.carisu.messageboard.saescqrstx.q.MessageQueryService;
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class MessageController {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<MessageDto> queryMessages() {
+    public List<Message> queryMessages() {
         return messageQueryService.query().get().asJava();
     }
 

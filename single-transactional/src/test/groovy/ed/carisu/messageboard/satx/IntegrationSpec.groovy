@@ -1,7 +1,7 @@
 package ed.carisu.messageboard.satx
 
 import ed.carisu.messageboard.satx.db.MessageBoardRepository
-import ed.carisu.messageboard.satx.io.MessageDto
+import ed.carisu.messageboard.satx.io.Message
 import groovy.json.JsonSlurper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -39,7 +39,7 @@ class IntegrationSpec extends Specification {
         .response
         .contentAsString
         def json = new JsonSlurper().parseText(results)
-        json.collect { new MessageDto(it.username, it.messageBody) }
+        json.collect { new Message(it.username, it.messageBody) }
     }
 
     def "Query has all POST commands in reverse order up to ten"() {
@@ -47,7 +47,7 @@ class IntegrationSpec extends Specification {
         def expected = []
         (1..number).each {
             post("user", "message: " + it)
-            expected += ["user", "message: " + it] as MessageDto
+            expected += ["user", "message: " + it] as Message
         }
         expected = expected.reverse()
         if (expected.size() > 10) {
