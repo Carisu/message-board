@@ -13,20 +13,25 @@ import java.time.Instant
 class MessageQueryServiceSpec extends GeneratorSpecification {
     static randomQuery(int pos = 10) {
         new MessageBoardQuery().tap {
-            q -> if (pos > 0) {
-                (1..pos).each {
-                    q.("username"+it) = usernameGenerator()
-                    q.("messageBody"+it) = messageBodyGenerator()
-                }
+            q -> pos == 0 ? null : (1..pos).each {
+                q.("username"+it) = usernameGenerator()
+                q.("messageBody"+it) = messageBodyGenerator()
             }
+        }
+    }
+
+    static queryAsList(MessageBoardQuery query) {
+        def end = (1..10).findIndexOf {
+            query.("messageBody"+it) == null || query.("username"+it) == null
+        }
+        end == 0 ? [] : (1..(end == -1 ? 10 : end)).collect {
+            new Message(query.("username"+it), query.("messageBody"+it))
         }
     }
 
     def "Check query returns correct data"() {
         given: "the service"
-        def repository = Stub(MessageBoardQueryRepository) {
-            getOne(_ as UUID) >> query
-        }
+        def repository = Mock(MessageBoardQueryRepository)
         def mapper = Mock(MessageQueryMapper)
         def service = new MessageQueryService(repository, mapper)
 
@@ -36,6 +41,7 @@ class MessageQueryServiceSpec extends GeneratorSpecification {
         then: "correct dtos returned"
         dtos.isSuccess()
         expected == dtos.get().asJava()
+        1 * repository.getOne(_ as UUID) >> query
         1 * mapper.convertQueryToList(query) >> Try.success(List.ofAll(expected))
 
         where:
@@ -46,10 +52,10 @@ class MessageQueryServiceSpec extends GeneratorSpecification {
         }
     }
 
-    def "Check repository throwing SQL expection results in failure"() {
+    def "Check repository throwing SQL exception results in failure"() {
         given: "the service"
         def repository = Stub(MessageBoardQueryRepository) {
-            _(_) >> { throw new SQLException() }
+            _ >> { throw new SQLException() }
         }
         def mapper = Mock(MessageQueryMapper) {
             0 * _
@@ -72,9 +78,9 @@ class MessageQueryServiceSpec extends GeneratorSpecification {
         then: "query updated, passing correct values to repository"
         test.isSuccess()
         1 * repository.getOne(_ as UUID) >> oldQuery
+        1 * mapper.convertQueryToList(oldQuery) >> Try.success(oldDtos)
+        1 * mapper.convertListToQuery(newDtos) >> Try.success(newQuery)
         1 * repository.saveAndFlush(newQuery) >> newQuery
-        1 * mapper.convertQueryToList(oldQuery) >> Try.success(List.empty())
-        1 * mapper.convertListToQuery(_) >> Try.success(newQuery)
 
         where:
         count << (0..10).findAll()
@@ -82,16 +88,18 @@ class MessageQueryServiceSpec extends GeneratorSpecification {
         event = new MessageBoardEvent(usernameGenerator(), messageBodyGenerator(), Instant.now())
         newQuery = new MessageBoardQuery().tap {
             q -> (0..count).take(10).each {
-                q.("username"+(it+1)) = (it == 0 ? event.username : oldQuery.("username"+it))
-                q.("messageBody"+(it+1)) = (it == 0 ? event.messageBody : oldQuery.("messageBody"+it))
-            }
+                    q.("username"+(it+1)) = (it == 0 ? event.username : oldQuery.("username"+it))
+                    q.("messageBody"+(it+1)) = (it == 0 ? event.messageBody : oldQuery.("messageBody"+it))
+                }
         }
+        oldDtos = List.ofAll(queryAsList(oldQuery))
+        newDtos = List.ofAll(queryAsList(newQuery))
     }
 
-    def "Check applying event with SQL excpetion results in failure"() {
+    def "Check applying event with SQL exception results in failure"() {
         given: "The service"
         def repository = Stub(MessageBoardQueryRepository) {
-            _(_) >> { throw new SQLException() }
+            _ >> { throw new SQLException() }
         }
         def mapper = Mock(MessageQueryMapper) {
             0 * _
